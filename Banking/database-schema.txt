@@ -1,0 +1,44 @@
+Customers
+-----------------------------------------------------------
+customer_id (Primary Key)
+first_name
+last_name
+date_of_birth
+address
+phone_number
+email
+
+
+Accounts
+-----------------------------------------------------------
+account_id (Primary Key)
+customer_id (Foreign Key references Customers.customer_id)
+account_type (e.g., Checking, Savings)
+balance
+
+
+Transactions
+-----------------------------------------------------------
+transaction_id (Primary Key)
+account_id (Foreign Key references Accounts.account_id)
+transaction_type (e.g., Deposit, Withdrawal, Transfer)
+amount
+transaction_date
+
+
+Branches
+-----------------------------------------------------------
+branch_id (Primary Key)
+branch_name
+address
+phone_number
+
+
+Employees
+-----------------------------------------------------------
+employee_id (Primary Key)
+branch_id (Foreign Key references Branches.branch_id)
+first_name
+last_name
+position (e.g., Manager, Teller)
+
