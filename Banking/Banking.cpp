@@ -1,75 +1,9 @@
 #include <iostream>
 #include <string>
+#include <cstdlib>
+#include "BankingUser.cpp"
 #include <sqlite3.h>
 
-
-class Bank
-{
-private:
-	std::string m_accountHolderName;
-	double m_customerBalance;
-	int m_accountNumber;
-
-public:
-
-	void customerBalance()
-	{
-		std::cout << "Your currently have: " << m_accountHolderName << std::endl;
-	}
-
-	Bank()
-	{
-		m_accountHolderName = "";
-		m_customerBalance = 0;
-		m_accountNumber = 1;
-	}
-
-	int checkUserMembership()
-	{
-		std::string answer;
-		std::cout << "Do you have an account. yes/no: ";
-		std::cin >> answer;
-		if (answer == "yes")
-		{
-			return true;
-		}
-		else {
-			newUser();
-		}
-		return 0;
-	}
-
-	std::string newUser()
-	{
-		std::cout << "Enter your full name: ";
-		std::cin.ignore();
-		std::getline(std::cin, m_accountHolderName);
-		std::cout << m_accountHolderName << std::endl;
-		return m_accountHolderName;
-	}
-
-	int accountActionable()
-	{
-		return 0;
-	}
-};
-
-class AccountCreation
-{
-private:
-	std::string m_accountHolderName;
-	double m_customerID; 
-	int m_accountNumber;
-
-public:
-	std::string newUser()
-	{
-		std::cout << "Enter your full name";
-		std::cin >> m_accountHolderName;
-		return m_accountHolderName;
-	}
-	
-};
 
 int callback(void* data, int argc, char** argv, char** azColName) {
     for (int i = 0; i < argc; i++) {
@@ -79,11 +13,40 @@ int callback(void* data, int argc, char** argv, char** azColName) {
     return 0;
 }
 
-void executeSQL(sqlite3* db, const char* sql)
+void executeSQL(sqlite3* db, const std::string& firstName, const std::string& lastName, const std::string& dateOfBirth,
+ const std::string& address, const std::string phoneNumber, const std::string email)
+{
+	sqlite3_stmt* stmt;
+	const char* sql = "INSERT INTO CUSTOMERS (ID, FIRST_NAME, LAST_NAME, DATE_OF_BIRTH, ADDRESS, PHONE_NUMBER, EMAIL) VALUES (?, ?, ?, ?, ?, ?, ?);";
+	char* errorMessage = 0;
+	int rc = sqlite3_prepare_v2(db, sql, -1, &stmt, 0);
+	
+	if (rc != SQLITE_OK) {
+        std::cerr << "SQL error: " << errorMessage << std::endl;
+        sqlite3_free(errorMessage);
+    }
+	sqlite3_bind_text(stmt, 2, firstName.c_str(), -1, SQLITE_STATIC);
+	sqlite3_bind_text(stmt, 3, lastName.c_str(), -1, SQLITE_STATIC);
+	sqlite3_bind_text(stmt, 4, dateOfBirth.c_str(), -1, SQLITE_STATIC);
+	sqlite3_bind_text(stmt, 5, address.c_str(), -1, SQLITE_STATIC);
+	sqlite3_bind_text(stmt, 6, phoneNumber.c_str(), -1, SQLITE_STATIC);
+	sqlite3_bind_text(stmt, 7, email.c_str(), -1, SQLITE_STATIC);
+
+	rc = sqlite3_step(stmt);
+    if (rc != SQLITE_DONE) {
+        std::cerr << "Execution failed: " << sqlite3_errmsg(db) << std::endl;
+    } else {
+        std::cout << "Record inserted successfully" << std::endl;
+    }
+
+	sqlite3_finalize(stmt);
+}
+
+void executeTableSQL(sqlite3* db, const char* sql)
 {
 	char* errorMessage = 0;
-	int rc = sqlite3_exec(db, sql, 0, 0, &errorMessage);
-	if (rc != SQLITE_OK) {
+	int rc = sqlite3_exec(db, sql, 0 , 0, &errorMessage);
+    if (rc != SQLITE_OK) {
         std::cerr << "SQL error: " << errorMessage << std::endl;
         sqlite3_free(errorMessage);
     }
@@ -106,7 +69,7 @@ void printTableData(sqlite3* db) {
                   << sqlite3_column_text(stmt, 2) << " | "
                   << sqlite3_column_text(stmt, 3) << " | "
                   << sqlite3_column_text(stmt, 4) << " | "
-                  << sqlite3_column_int(stmt, 5) << " | "
+                  << sqlite3_column_text(stmt, 5) << " | "
                   << sqlite3_column_text(stmt, 6) << std::endl;
     }
 
@@ -115,8 +78,7 @@ void printTableData(sqlite3* db) {
 
 int main()
 {
-	// Bank bank;
-	// bank.checkUserMembership();
+
 	sqlite3* db;
 	int rc = sqlite3_open("database.db", &db);
 
@@ -128,30 +90,37 @@ int main()
 	}
 
 	const char* createTableSQL = "CREATE TABLE CUSTOMERS(" 
-	"ID INT PRIMARY KEY		NOT NULL," 
+	"ID INTEGER PRIMARY KEY AUTOINCREMENT		NOT NULL," 
 	"FIRST_NAME		TEXT 	NOT NULL," 
 	"LAST_NAME 		TEXT 	NOT NULL," 
 	"DATE_OF_BIRTH	DATE	NOT NULL,"	
-	"ADDRESS 		TEXT	NOT NULL," 
-	"PHONE_NUMBER	INT		NOT NULL," 
-	"EMAIL			TEXT	NOT NULL);";
+	"ADDRESS 		VARTCHAR(75)	NOT NULL," 
+	"PHONE_NUMBER	VARCHAR(20)	NOT NULL," 
+	"EMAIL			VARCHAR(50)	NOT NULL);";
 
-	executeSQL(db, createTableSQL);
-	std::cout << "Table has been created" << std::endl;
-
-	const char* insertDataSQL = "INSERT INTO CUSTOMERS (ID, FIRST_NAME, LAST_NAME, DATE_OF_BIRTH, ADDRESS, PHONE_NUMBER, EMAIL) "
-                                "VALUES (1, 'John', 'Doe', '1985-04-12', '123 Elm St, NY', 1234567890, 'johndoe@example.com'); "
-                                "INSERT INTO CUSTOMERS (ID, FIRST_NAME, LAST_NAME, DATE_OF_BIRTH, ADDRESS, PHONE_NUMBER, EMAIL) "
-                                "VALUES (2, 'Jane', 'Smith', '1990-08-22', '456 Oak St, CA', 2345678901, 'janesmith@example.com'); "
-                                "INSERT INTO CUSTOMERS (ID, FIRST_NAME, LAST_NAME, DATE_OF_BIRTH, ADDRESS, PHONE_NUMBER, EMAIL) "
-                                "VALUES (3, 'Bob', 'Johnson', '1975-12-30', '789 Pine St, TX', 3456789012, 'bobjohnson@example.com'); "
-                                "INSERT INTO CUSTOMERS (ID, FIRST_NAME, LAST_NAME, DATE_OF_BIRTH, ADDRESS, PHONE_NUMBER, EMAIL) "
-                                "VALUES (4, 'Alice', 'Williams', '1988-03-15', '101 Maple St, FL', 4567890123, 'alicew@example.com'); "
-                                "INSERT INTO CUSTOMERS (ID, FIRST_NAME, LAST_NAME, DATE_OF_BIRTH, ADDRESS, PHONE_NUMBER, EMAIL) "
-                                "VALUES (5, 'Michael', 'Brown', '1995-07-20', '202 Birch St, IL', 5678901234, 'michaelbrown@example.com');";
-    executeSQL(db, insertDataSQL);
-    std::cout << "Records created successfully" << std::endl;
 	
+	// std::cout << "Table has been created" << std::endl;
+
+	// const char* insertDataSQL = "INSERT INTO CUSTOMERS (ID, FIRST_NAME, LAST_NAME, DATE_OF_BIRTH, ADDRESS, PHONE_NUMBER, EMAIL) "
+    //                             "VALUES (1, 'John', 'Doe', '1985-04-12', '123 Elm St, NY', 1234567890, 'johndoe@example.com'); "
+    //                             "INSERT INTO CUSTOMERS (ID, FIRST_NAME, LAST_NAME, DATE_OF_BIRTH, ADDRESS, PHONE_NUMBER, EMAIL) "
+    //                             "VALUES (2, 'Jane', 'Smith', '1990-08-22', '456 Oak St, CA', 2345678901, 'janesmith@example.com'); "
+    //                             "INSERT INTO CUSTOMERS (ID, FIRST_NAME, LAST_NAME, DATE_OF_BIRTH, ADDRESS, PHONE_NUMBER, EMAIL) "
+    //                             "VALUES (3, 'Bob', 'Johnson', '1975-12-30', '789 Pine St, TX', 3456789012, 'bobjohnson@example.com'); "
+    //                             "INSERT INTO CUSTOMERS (ID, FIRST_NAME, LAST_NAME, DATE_OF_BIRTH, ADDRESS, PHONE_NUMBER, EMAIL) "
+    //                             "VALUES (4, 'Alice', 'Williams', '1988-03-15', '101 Maple St, FL', 4567890123, 'alicew@example.com'); "
+    //                             "INSERT INTO CUSTOMERS (ID, FIRST_NAME, LAST_NAME, DATE_OF_BIRTH, ADDRESS, PHONE_NUMBER, EMAIL) "
+    //                             "VALUES (5, 'Michael', 'Brown', '1995-07-20', '202 Birch St, IL', 5678901234, 'michaelbrown@example.com');";
+    //executeSQL(db, createTableSQL);
+
+
+    // std::cout << "Records created successfully" << std::endl;
+	// executeTableSQL(db, createTableSQL);
+	// executeSQL(db, "Luis", "Abreu", "1999-25-02", "92 South 10th", "347-661-6555", "luistest@gmail.com");
+	//executeTableSQL(db, createTableSQL);
+
     printTableData(db);
 	sqlite3_close(db);
+
+	Bank b;
 }
