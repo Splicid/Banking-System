@@ -14,6 +14,7 @@ private:
 public:
     std::string m_accountHolderFirst;
     std::string m_accountHolderLast;
+    std::string m_accountHolderDate;
 
 
 	Bank()
@@ -41,18 +42,40 @@ public:
         return 0;
 	}
 
+    std::string dateCheck(std::string m_accountDate)
+    {
+
+        std::cout << "Enter Your date of birth (YYYY-MM-DD)";
+        std::getline(std::cin, m_accountDate);
+        struct tm tm;   
+        std::string s(m_accountDate);
+        if (strptime(s.c_str(), "%Y-%m-%d", &tm))
+            //std::cout << "Validate date" << std::endl;
+            return m_accountDate;
+        return "Invalid Date";
+         
+    }
+
 	std::string newUser()
 	{
+        // Getting account info 
+        // First Name
 		std::cout << "Enter your first name: ";
 		std::cin.ignore();
-
-        //Getting account info 
 		std::getline(std::cin, m_accountHolderFirst);
-        
-        std::cout << "Enter you last name: ";
+
+        // Last Name
+        std::cout << "Enter your last name: ";
         std::getline(std::cin, m_accountHolderLast);
-		std::cout << m_accountHolderFirst << std::endl;
-		return m_accountHolderFirst;
+
+        // Date of Birth
+        std::string date = dateCheck(m_accountHolderDate);
+        std::cout << date << std::endl;
+
+        // Address
+        //std::cout << "Enter your address" << std::endl;
+
+		return m_accountHolderDate;
 	}
 
 	int accountActionable()

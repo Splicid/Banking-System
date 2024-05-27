@@ -119,8 +119,9 @@ int main()
 	// executeSQL(db, "Luis", "Abreu", "1999-25-02", "92 South 10th", "347-661-6555", "luistest@gmail.com");
 	//executeTableSQL(db, createTableSQL);
 
-    printTableData(db);
-	sqlite3_close(db);
+    //printTableData(db);
+	//sqlite3_close(db);
 
 	Bank b;
+	b.checkUserMembership();
 }
