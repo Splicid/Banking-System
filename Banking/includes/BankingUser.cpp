@@ -2,7 +2,7 @@
 #include <string>
 #include <cstdlib>
 #include <sqlite3.h>
-
+#include "BankingDBActions.cpp"
 
 
 class Bank
@@ -15,6 +15,13 @@ public:
     std::string m_accountHolderFirst;
     std::string m_accountHolderLast;
     std::string m_accountHolderDate;
+
+    // Variables for users address
+    std::string m_accountHolderAddress;
+    std::string m_accountHolderCity;
+    std::string m_accountHolderState;
+    int m_accountHolderZip;
+
 
 
 	Bank()
@@ -45,18 +52,18 @@ public:
     std::string dateCheck(std::string m_accountDate)
     {
 
-        std::cout << "Enter Your date of birth (YYYY-MM-DD)";
+        std::cout << "Enter Your date of birth (YYYY-MM-DD): ";
         std::getline(std::cin, m_accountDate);
         struct tm tm;   
         std::string s(m_accountDate);
         if (strptime(s.c_str(), "%Y-%m-%d", &tm))
             //std::cout << "Validate date" << std::endl;
             return m_accountDate;
-        return "Invalid Date";
+        return dateCheck(m_accountDate);
          
     }
 
-	std::string newUser()
+	void newUser()
 	{
         // Getting account info 
         // First Name
@@ -70,12 +77,27 @@ public:
 
         // Date of Birth
         std::string date = dateCheck(m_accountHolderDate);
-        std::cout << date << std::endl;
 
-        // Address
-        //std::cout << "Enter your address" << std::endl;
+        // Address Prompts
+        std::cout << "Enter Address Line: ";
+        std::getline(std::cin, m_accountHolderAddress);
+        std::cout << "Enter your city: ";
+        std::getline(std::cin, m_accountHolderAddress);
+        std::cout << "Enter your State: ";
+		std::getline(std::cin, m_accountHolderState);
+		std::cout << "Enter your Zip Code: ";
+		std::cin >> m_accountHolderZip;
 
-		return m_accountHolderDate;
+		// Displaying the information
+		std::cout << "--------------- Your account has been created ---------------" << std::endl;
+		std::cout << "Name: " << m_accountHolderFirst << " " << m_accountHolderLast << std::endl;
+		std::cout << "Date of Birth: " << m_accountHolderDate << std::endl;
+		std::cout << "Address: " << m_accountHolderAddress << std::endl;
+		std::cout << "City: " << m_accountHolderCity << std::endl;
+		std::cout << "State: " << m_accountHolderState << std::endl;
+		std::cout << "Zip Code: " << m_accountHolderZip << std::endl;
+
+		
 	}
 
 	int accountActionable()
