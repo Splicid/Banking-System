@@ -1,0 +1,5 @@
+
+
+Current Tasks:
+- Fix the structure of password hashing
+- Create a query that insert account details to Customer table and Account Table.

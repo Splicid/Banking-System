@@ -12,7 +12,7 @@ int callback(void* data, int argc, char** argv, char** azColName) {
     return 0;
 }
 
-void executeSQL(sqlite3* db, const std::string& firstName, const std::string& lastName, const std::string& dateOfBirth,
+void executeCustomerSQL(sqlite3* db, const std::string& firstName, const std::string& lastName, const std::string& dateOfBirth,
  const std::string& address, const std::string phoneNumber, const std::string email)
 {
 	sqlite3_stmt* stmt;
@@ -39,6 +39,31 @@ void executeSQL(sqlite3* db, const std::string& firstName, const std::string& la
     }
 
 	sqlite3_finalize(stmt);
+}
+
+void executeAccountSQL(sqlite3* db, const int accountNumber, const double balance, const int accountHolderId)
+{
+    sqlite3_stmt* stmt;
+    const char* sql = "INSERT INTO ACCOUNTS (ID, ACCOUNT_NUMBER, BALANCE, ACCOUNT_HOLDER_ID) VALUES (?, ?, ?, ?);";
+    char* errorMessage = 0;
+    int rc = sqlite3_prepare_v2(db, sql, -1, &stmt, 0);
+    
+    if (rc != SQLITE_OK) {
+        std::cerr << "SQL error: " << errorMessage << std::endl;
+        sqlite3_free(errorMessage);
+    }
+    sqlite3_bind_int(stmt, 2, accountNumber);
+    sqlite3_bind_double(stmt, 3, balance);
+    sqlite3_bind_int(stmt, 4, accountHolderId);
+
+    rc = sqlite3_step(stmt);
+    if (rc != SQLITE_DONE) {
+        std::cerr << "Execution failed: " << sqlite3_errmsg(db) << std::endl;
+    } else {
+        std::cout << "Record inserted successfully" << std::endl;
+    }
+
+    sqlite3_finalize(stmt);
 }
 
 void executeTableSQL(sqlite3* db, const char* sql)

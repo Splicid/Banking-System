@@ -32,7 +32,6 @@ int main()
     "ID INTEGER PRIMARY KEY AUTOINCREMENT		NOT NULL,"
     "ACCOUNT_NUMBER INTEGER NOT NULL,"
     "BALANCE DOUBLE NOT NULL,"
-    "ACCOUNT_TYPE TEXT NOT NULL,"
     "ACCOUNT_HOLDER_ID INTEGER NOT NULL,"
     "FOREIGN KEY(ACCOUNT_HOLDER_ID) REFERENCES CUSTOMERS(ID));";
 
@@ -53,15 +52,17 @@ int main()
 
 
     // std::cout << "Records created successfully" << std::endl;
-	executeTableSQL(db, createTableSQL2);
-	// executeSQL(db, "Luis", "Abreu", "1999-25-02", "92 South 10th", "347-661-6555", "luistest@gmail.com");
-	
-    //executeTableSQL(db, createTableSQL);
-    printTableData(db);
+	// executeTableSQL(db, createTableSQL);
+    // executeTableSQL(db, createTableSQL2);
+	// executeCustomerSQL(db, "Luis", "Abreu", "1999-25-02", "92 South 10th", "347-661-6555", "luistest@gmail.com");
+	// executeAccountSQL(db, 123456, 1000.00, 1);
+
+    //printTableData(db);
 	//sqlite3_close(db);
 
 	Bank b;
-	b.checkUserMembership();
+	b.testCheckPassword();
 
-    std::cout << "Welcome to the bank" << std::endl;
+    //std::cout << "Welcome to the bank" << std::endl;
+
 }
