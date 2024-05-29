@@ -22,18 +22,15 @@ int main()
 	const char* createTableSQL = "CREATE TABLE CUSTOMERS(" 
 	"ID INTEGER PRIMARY KEY AUTOINCREMENT		NOT NULL," 
 	"FIRST_NAME		TEXT 	NOT NULL," 
-	"LAST_NAME 		TEXT 	NOT NULL," 
-	"DATE_OF_BIRTH	DATE	NOT NULL,"	
+	"LAST_NAME 		TEXT 	NOT NULL,"
 	"ADDRESS 		VARTCHAR(75)	NOT NULL," 
-	"PHONE_NUMBER	VARCHAR(20)	NOT NULL," 
-	"EMAIL			VARCHAR(50)	NOT NULL);";
+	"PHONE_NUMBER	VARCHAR(20)	NOT NULL,"
+	"FOREIGN KEY(ID) REFERENCES ACCOUNTS(ID));";
 
     const char* createTableSQL2 = "CREATE TABLE ACCOUNTS("
     "ID INTEGER PRIMARY KEY AUTOINCREMENT		NOT NULL,"
-    "ACCOUNT_NUMBER INTEGER NOT NULL,"
-    "BALANCE DOUBLE NOT NULL,"
-    "ACCOUNT_HOLDER_ID INTEGER NOT NULL,"
-    "FOREIGN KEY(ACCOUNT_HOLDER_ID) REFERENCES CUSTOMERS(ID));";
+	"ACCOUNT_EMAIL		VARCHAR(50)	NOT NULL UNIQUE,"
+	"ACCOUNT_PASSWORD	VARCHAR(50)	NOT NULL);";
 
 	
 	// std::cout << "Table has been created" << std::endl;
@@ -52,16 +49,16 @@ int main()
 
 
     // std::cout << "Records created successfully" << std::endl;
-	// executeTableSQL(db, createTableSQL);
-    // executeTableSQL(db, createTableSQL2);
+	executeTableSQL(db, createTableSQL2);
+	executeTableSQL(db, createTableSQL);
 	// executeCustomerSQL(db, "Luis", "Abreu", "1999-25-02", "92 South 10th", "347-661-6555", "luistest@gmail.com");
 	// executeAccountSQL(db, 123456, 1000.00, 1);
 
-    //printTableData(db);
+    // printTableData(db);
 	//sqlite3_close(db);
 
-	Bank b;
-	b.testCheckPassword();
+	// Bank b;
+	// b.checkUserMembership();
 
     //std::cout << "Welcome to the bank" << std::endl;
 

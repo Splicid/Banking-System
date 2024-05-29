@@ -23,6 +23,7 @@ public:
     std::string m_accountHolderState;
 	std::string m_fullAddress;
 	std::string m_emailAddress;
+	std::string m_phoneNumber;
     int m_accountHolderZip;
 	sqlite3* db;
 
@@ -121,56 +122,69 @@ public:
 		std::cout << "Hashed Password: " << hashedPassword << std::endl;
 		std::cout << "Password is: " << checkPassword(password, hashedPassword) << std::endl;
 	}
+
+	// This function will create a new user
 	void newUser()
 	{
-        // Getting account info 
+		// Getting account info
 		std::cout << "--------------- Welcome to the Bank ---------------" << std::endl;
-        // First Name
+
+		// First Name
 		std::cout << "Enter your first name: ";
-		std::cin.ignore();
+		std::cin.ignore(); // Discard any leftover characters in the input buffer
 		std::getline(std::cin, m_accountHolderFirst);
 
-        // Last Name
-        std::cout << "Enter your last name: ";
-        std::getline(std::cin, m_accountHolderLast);
+		// Last Name
+		std::cout << "Enter your last name: ";
+		std::getline(std::cin, m_accountHolderLast);
 
 		// Email Address
 		std::cout << "Enter your email address: ";
-		std::cin >> m_emailAddress;
+		std::getline(std::cin, m_emailAddress);
 
-		// Password 
+		// Password
 		std::string password = getPassword();
+		std::cin.ignore(); // Discard any leftover characters in the input buffer
 
-        // Date of Birth
-        std::string date = dateCheck(m_accountHolderDate);
+		// Address Prompts
+		std::cout << "Enter Address Line: ";
+		std::getline(std::cin, m_accountHolderAddress);
 
-        // Address Prompts
-        std::cout << "Enter Address Line: ";
-        std::getline(std::cin, m_accountHolderAddress);
-        std::cout << "Enter your city: ";
-        std::getline(std::cin, m_accountHolderAddress);
-        std::cout << "Enter your State: ";
+		std::cout << "Enter your city: ";
+		std::getline(std::cin, m_accountHolderCity);
+
+		std::cout << "Enter your State: ";
 		std::getline(std::cin, m_accountHolderState);
+
 		std::cout << "Enter your Zip Code: ";
 		std::cin >> m_accountHolderZip;
+		std::cin.ignore(); // Discard any leftover characters in the input buffer
+
+		std::cout << "Enter your phone number: ";
+		std::getline(std::cin, m_phoneNumber);
 
 		// Displaying the information
 		std::cout << "--------------- Your account has been created ---------------" << std::endl;
 		std::cout << "Name: " << m_accountHolderFirst << " " << m_accountHolderLast << std::endl;
-		std::cout << "Date of Birth: " << m_accountHolderDate << std::endl;
 		std::cout << "Address: " << m_accountHolderAddress << std::endl;
 		std::cout << "City: " << m_accountHolderCity << std::endl;
 		std::cout << "State: " << m_accountHolderState << std::endl;
 		std::cout << "Zip Code: " << m_accountHolderZip << std::endl;
 
 		std::string m_fullAddress = m_accountHolderAddress + " " + m_accountHolderCity + " " + m_accountHolderState + " " + std::to_string(m_accountHolderZip);
+		std::string m_HashedPassword = hashPassword(password);
+
 		// Inserting the information into the database
-		
+		try {
+			executeCustomerSQL(db, m_accountHolderFirst, m_accountHolderLast, m_fullAddress, m_phoneNumber);
+			executeAccountSQL(db, m_emailAddress, m_HashedPassword);
+		} catch (const std::exception& e) {
+			std::cout << "Error inserting data: " << e.what() << std::endl;
+		}
 	}
 
 	int accountActionable()
 	{
-		executeCustomerSQL(db, m_accountHolderFirst, m_accountHolderLast, m_accountHolderDate, m_fullAddress, "1234567890", m_emailAddress);
 		return 0;
 	}
 

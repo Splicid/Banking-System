@@ -1,5 +1,7 @@
 
 
 Current Tasks:
-- Fix the structure of password hashing
-- Create a query that insert account details to Customer table and Account Table.
+- Redo database - DONE
+- Modify SQL account database for password - DONE
+- Fix the structure of password hashing - DONE
+- Create a query that insert account details to Customer table and Account Table. - TESTING
