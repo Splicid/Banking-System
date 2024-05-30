@@ -19,46 +19,47 @@ int main()
 		std::cout << "Connection successful" << std::endl;
 	}
 
-	const char* createTableSQL = "CREATE TABLE CUSTOMERS(" 
-	"ID INTEGER PRIMARY KEY AUTOINCREMENT		NOT NULL," 
-	"FIRST_NAME		TEXT 	NOT NULL," 
-	"LAST_NAME 		TEXT 	NOT NULL,"
-	"ADDRESS 		VARTCHAR(75)	NOT NULL," 
-	"PHONE_NUMBER	VARCHAR(20)	NOT NULL,"
-	"FOREIGN KEY(ID) REFERENCES ACCOUNTS(ID));";
+        const char* createCustomerTableSQL = R"(
+            CREATE TABLE IF NOT EXISTS CUSTOMERS (
+                ID INTEGER PRIMARY KEY AUTOINCREMENT,
+                FIRST_NAME TEXT NOT NULL,
+                LAST_NAME TEXT NOT NULL,
+                ADDRESS TEXT NOT NULL,
+                PHONE_NUMBER TEXT NOT NULL
+            );
+        )";
 
-    const char* createTableSQL2 = "CREATE TABLE ACCOUNTS("
-    "ID INTEGER PRIMARY KEY AUTOINCREMENT		NOT NULL,"
-	"ACCOUNT_EMAIL		VARCHAR(50)	NOT NULL UNIQUE,"
-	"ACCOUNT_PASSWORD	VARCHAR(50)	NOT NULL);";
-
-	
-	// std::cout << "Table has been created" << std::endl;
-
-	// const char* insertDataSQL = "INSERT INTO CUSTOMERS (ID, FIRST_NAME, LAST_NAME, DATE_OF_BIRTH, ADDRESS, PHONE_NUMBER, EMAIL) "
-    //                             "VALUES (1, 'John', 'Doe', '1985-04-12', '123 Elm St, NY', 1234567890, 'johndoe@example.com'); "
-    //                             "INSERT INTO CUSTOMERS (ID, FIRST_NAME, LAST_NAME, DATE_OF_BIRTH, ADDRESS, PHONE_NUMBER, EMAIL) "
-    //                             "VALUES (2, 'Jane', 'Smith', '1990-08-22', '456 Oak St, CA', 2345678901, 'janesmith@example.com'); "
-    //                             "INSERT INTO CUSTOMERS (ID, FIRST_NAME, LAST_NAME, DATE_OF_BIRTH, ADDRESS, PHONE_NUMBER, EMAIL) "
-    //                             "VALUES (3, 'Bob', 'Johnson', '1975-12-30', '789 Pine St, TX', 3456789012, 'bobjohnson@example.com'); "
-    //                             "INSERT INTO CUSTOMERS (ID, FIRST_NAME, LAST_NAME, DATE_OF_BIRTH, ADDRESS, PHONE_NUMBER, EMAIL) "
-    //                             "VALUES (4, 'Alice', 'Williams', '1988-03-15', '101 Maple St, FL', 4567890123, 'alicew@example.com'); "
-    //                             "INSERT INTO CUSTOMERS (ID, FIRST_NAME, LAST_NAME, DATE_OF_BIRTH, ADDRESS, PHONE_NUMBER, EMAIL) "
-    //                             "VALUES (5, 'Michael', 'Brown', '1995-07-20', '202 Birch St, IL', 5678901234, 'michaelbrown@example.com');";
-    //executeSQL(db, createTableSQL);
+        const char* createAccountTableSQL = R"(
+            CREATE TABLE IF NOT EXISTS ACCOUNTS (
+                ID INTEGER PRIMARY KEY AUTOINCREMENT,
+                CUSTOMER_ID INTEGER NOT NULL,
+                ACCOUNT_EMAIL TEXT NOT NULL,
+                ACCOUNT_PASSWORD TEXT NOT NULL,
+                FOREIGN KEY (CUSTOMER_ID) REFERENCES CUSTOMERS(ID)
+            );
+        )";
 
 
-    // std::cout << "Records created successfully" << std::endl;
-	executeTableSQL(db, createTableSQL2);
-	executeTableSQL(db, createTableSQL);
-	// executeCustomerSQL(db, "Luis", "Abreu", "1999-25-02", "92 South 10th", "347-661-6555", "luistest@gmail.com");
-	// executeAccountSQL(db, 123456, 1000.00, 1);
+		// executeTableSQL(db, createCustomerTableSQL);
+		// executeTableSQL(db, createAccountTableSQL);
+		std::string firstName = "John";
+		std::string lastName = "Doe";
+		std::string address = "1234 Elm St";
+		std::string phoneNumber = "123-456-7890";
+
+		// executeCustomerSQL(db, firstName.c_str(), lastName.c_str(), address.c_str(), phoneNumber.c_str());
+
+	std::string accountEmail = "test@gmail.com";
+	std::string accountPassword = "password";
+
+	// executeCustomerSQL(db, firstName, lastName, address, phoneNumber);
+	// executeAccountSQL(db, 1, accountEmail, accountPassword);
 
     // printTableData(db);
 	//sqlite3_close(db);
 
-	// Bank b;
-	// b.checkUserMembership();
+	Bank b;
+	b.testingInsert();
 
     //std::cout << "Welcome to the bank" << std::endl;
 

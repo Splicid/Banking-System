@@ -39,10 +39,10 @@ std::string& address, std::string& phoneNumber)
 	sqlite3_finalize(stmt);
 }
 
-void executeAccountSQL(sqlite3* db, const std::string& accountEmail, const std::string& ACCOUNT_PASSWORD)
+void executeAccountSQL(sqlite3* db, int CUSTOMER_ID, const std::string& accountEmail, const std::string& ACCOUNT_PASSWORD)
 {
     sqlite3_stmt* stmt;
-    const char* sql = "INSERT INTO ACCOUNTS (ID, ACCOUNT_EMAIL, ACCOUNT_PASSWORD) VALUES (?, ?, ?);";
+    const char* sql = "INSERT INTO ACCOUNTS (ID, CUSTOMER_ID, ACCOUNT_EMAIL, ACCOUNT_PASSWORD) VALUES (?, ?, ?, ?);";
     char* errorMessage = 0;
     int rc = sqlite3_prepare_v2(db, sql, -1, &stmt, 0);
     
@@ -50,8 +50,9 @@ void executeAccountSQL(sqlite3* db, const std::string& accountEmail, const std::
         std::cerr << "SQL error: " << errorMessage << std::endl;
         sqlite3_free(errorMessage);
     }
-    sqlite3_bind_text(stmt, 2, accountEmail.c_str(), -1, SQLITE_STATIC);
-    sqlite3_bind_text(stmt, 3, ACCOUNT_PASSWORD.c_str(), -1, SQLITE_STATIC);
+    sqlite3_bind_int(stmt, 2, CUSTOMER_ID);
+    sqlite3_bind_text(stmt, 3, accountEmail.c_str(), -1, SQLITE_STATIC);
+    sqlite3_bind_text(stmt, 4, ACCOUNT_PASSWORD.c_str(), -1, SQLITE_STATIC);
 
     rc = sqlite3_step(stmt);
     if (rc != SQLITE_DONE) {

@@ -2,7 +2,6 @@
 #include <string>
 #include <cstdlib>
 #include <sqlite3.h>
-#include "BankingDBActions.cpp"
 #include <sodium.h>
 
 class Bank
@@ -15,7 +14,6 @@ private:
 public:
     std::string m_accountHolderFirst;
     std::string m_accountHolderLast;
-    std::string m_accountHolderDate;
 
     // Variables for users address
     std::string m_accountHolderAddress;
@@ -24,8 +22,8 @@ public:
 	std::string m_fullAddress;
 	std::string m_emailAddress;
 	std::string m_phoneNumber;
-    int m_accountHolderZip;
 	sqlite3* db;
+    int m_accountHolderZip;
 
 
 
@@ -123,65 +121,129 @@ public:
 		std::cout << "Password is: " << checkPassword(password, hashedPassword) << std::endl;
 	}
 
+
+    int callback(void* data, int argc, char** argv, char** azColName) {
+        for (int i = 0; i < argc; i++) {
+            printf("%s = %s\n", azColName[i], argv[i] ? argv[i] : "NULL");
+        }
+        printf("\n");
+        return 0;
+    }
+
+    void executeCustomerSQL(sqlite3* db, const std::string& firstName, const std::string& lastName,
+        const std::string& address, const std::string& phoneNumber) {
+        sqlite3_stmt* stmt;
+        const char* sql = "INSERT INTO CUSTOMERS (FIRST_NAME, LAST_NAME, ADDRESS, PHONE_NUMBER) VALUES (?, ?, ?, ?);";
+        int rc = sqlite3_prepare_v2(db, sql, -1, &stmt, 0);
+
+        if (rc != SQLITE_OK) {
+            std::cerr << "SQL error: " << sqlite3_errmsg(db) << std::endl;
+            return;
+        }
+
+        sqlite3_bind_text(stmt, 1, firstName.c_str(), -1, SQLITE_STATIC);
+        sqlite3_bind_text(stmt, 2, lastName.c_str(), -1, SQLITE_STATIC);
+        sqlite3_bind_text(stmt, 3, address.c_str(), -1, SQLITE_STATIC);
+        sqlite3_bind_text(stmt, 4, phoneNumber.c_str(), -1, SQLITE_STATIC);
+
+        rc = sqlite3_step(stmt);
+        if (rc != SQLITE_DONE) {
+            std::cerr << "Execution failed: " << sqlite3_errmsg(db) << std::endl;
+        } else {
+            std::cout << "Record inserted successfully" << std::endl;
+        }
+
+        sqlite3_finalize(stmt);
+    }
+
+    void executeAccountSQL(sqlite3* db, int CUSTOMER_ID, const std::string& ACCOUNT_EMAIL, const std::string& ACCOUNT_PASSWORD) {
+        sqlite3_stmt* stmt;
+        const char* sql = "INSERT INTO ACCOUNTS (CUSTOMER_ID, ACCOUNT_EMAIL, ACCOUNT_PASSWORD) VALUES (?, ?, ?);";
+        int rc = sqlite3_prepare_v2(db, sql, -1, &stmt, 0);
+
+        if (rc != SQLITE_OK) {
+            std::cerr << "SQL error: " << sqlite3_errmsg(db) << std::endl;
+            return;
+        }
+
+        sqlite3_bind_int(stmt, 1, CUSTOMER_ID);
+        sqlite3_bind_text(stmt, 2, ACCOUNT_EMAIL.c_str(), -1, SQLITE_STATIC);
+        sqlite3_bind_text(stmt, 3, ACCOUNT_PASSWORD.c_str(), -1, SQLITE_STATIC);
+
+        rc = sqlite3_step(stmt);
+        if (rc != SQLITE_DONE) {
+            std::cerr << "Execution failed: " << sqlite3_errmsg(db) << std::endl;
+        } else {
+            std::cout << "Record inserted successfully" << std::endl;
+        }
+
+        sqlite3_finalize(stmt);
+    }
+
+	int testingInsert() {
+        int randomNum = rand() % 1000 + 1;
+        std::string firstName = "John";
+        std::string lastName = "Doe";
+        std::string address = "1234 Elm St";
+        std::string phoneNumber = "123-456-7890";
+
+        std::string accountEmail = "test@gmail.com";
+        std::string accountPassword = "password";
+
+        std::cout << firstName << " " << lastName << " " << address << " " << phoneNumber << std::endl;
+        std::cout << randomNum << " " << accountEmail << " " << accountPassword << std::endl;
+        executeCustomerSQL(db, firstName, lastName, address, phoneNumber);
+        executeAccountSQL(db, randomNum, accountEmail, hashPassword(accountPassword));
+
+        return 0;
+    }
+
 	// This function will create a new user
-	void newUser()
-	{
-		// Getting account info
-		std::cout << "--------------- Welcome to the Bank ---------------" << std::endl;
+	void newUser() {
+        std::cout << "--------------- Welcome to the Bank ---------------" << std::endl;
 
-		// First Name
-		std::cout << "Enter your first name: ";
-		std::cin.ignore(); // Discard any leftover characters in the input buffer
-		std::getline(std::cin, m_accountHolderFirst);
+        std::cout << "Enter your first name: ";
+        std::cin.ignore(); 
+        std::getline(std::cin, m_accountHolderFirst);
 
-		// Last Name
-		std::cout << "Enter your last name: ";
-		std::getline(std::cin, m_accountHolderLast);
+        std::cout << "Enter your last name: ";
+        std::getline(std::cin, m_accountHolderLast);
 
-		// Email Address
-		std::cout << "Enter your email address: ";
-		std::getline(std::cin, m_emailAddress);
+        std::cout << "Enter your email address: ";
+        std::getline(std::cin, m_emailAddress);
 
-		// Password
-		std::string password = getPassword();
-		std::cin.ignore(); // Discard any leftover characters in the input buffer
+        std::string password = getPassword();
+        std::cin.ignore(); 
 
-		// Address Prompts
-		std::cout << "Enter Address Line: ";
-		std::getline(std::cin, m_accountHolderAddress);
+        std::cout << "Enter Address Line: ";
+        std::getline(std::cin, m_accountHolderAddress);
 
-		std::cout << "Enter your city: ";
-		std::getline(std::cin, m_accountHolderCity);
+        std::cout << "Enter your city: ";
+        std::getline(std::cin, m_accountHolderCity);
 
-		std::cout << "Enter your State: ";
-		std::getline(std::cin, m_accountHolderState);
+        std::cout << "Enter your State: ";
+        std::getline(std::cin, m_accountHolderState);
 
-		std::cout << "Enter your Zip Code: ";
-		std::cin >> m_accountHolderZip;
-		std::cin.ignore(); // Discard any leftover characters in the input buffer
+        std::cout << "Enter your Zip Code: ";
+        std::cin >> m_accountHolderZip;
+        std::cin.ignore();
 
-		std::cout << "Enter your phone number: ";
-		std::getline(std::cin, m_phoneNumber);
+        std::cout << "Enter your phone number: ";
+        std::getline(std::cin, m_phoneNumber);
 
-		// Displaying the information
-		std::cout << "--------------- Your account has been created ---------------" << std::endl;
-		std::cout << "Name: " << m_accountHolderFirst << " " << m_accountHolderLast << std::endl;
-		std::cout << "Address: " << m_accountHolderAddress << std::endl;
-		std::cout << "City: " << m_accountHolderCity << std::endl;
-		std::cout << "State: " << m_accountHolderState << std::endl;
-		std::cout << "Zip Code: " << m_accountHolderZip << std::endl;
+        std::cout << "--------------- Your account has been created ---------------" << std::endl;
+        std::cout << "Name: " << m_accountHolderFirst << " " << m_accountHolderLast << std::endl;
+        std::cout << "Address: " << m_accountHolderAddress << std::endl;
+        std::cout << "City: " << m_accountHolderCity << std::endl;
+        std::cout << "State: " << m_accountHolderState << std::endl;
+        std::cout << "Zip Code: " << m_accountHolderZip << std::endl;
 
-		std::string m_fullAddress = m_accountHolderAddress + " " + m_accountHolderCity + " " + m_accountHolderState + " " + std::to_string(m_accountHolderZip);
-		std::string m_HashedPassword = hashPassword(password);
+        std::string m_fullAddress = m_accountHolderAddress + " " + m_accountHolderCity + " " + m_accountHolderState + " " + std::to_string(m_accountHolderZip);
+        std::string m_HashedPassword = hashPassword(password);
 
-		// Inserting the information into the database
-		try {
-			executeCustomerSQL(db, m_accountHolderFirst, m_accountHolderLast, m_fullAddress, m_phoneNumber);
-			executeAccountSQL(db, m_emailAddress, m_HashedPassword);
-		} catch (const std::exception& e) {
-			std::cout << "Error inserting data: " << e.what() << std::endl;
-		}
-	}
+        executeCustomerSQL(db, m_accountHolderFirst, m_accountHolderLast, m_fullAddress, m_phoneNumber);
+        executeAccountSQL(db, rand() % 1000 + 1, m_emailAddress, m_HashedPassword);
+    }
 
 	int accountActionable()
 	{
@@ -192,21 +254,4 @@ public:
     {
         std::cout << "Destroying Info" << std::endl;
     }
-};
-
-class AccountCreation
-{
-private:
-	std::string m_accountHolderName;
-	double m_customerID; 
-	int m_accountNumber;
-
-public:
-	std::string newUser()
-	{
-		std::cout << "Enter your full name";
-		std::cin >> m_accountHolderName;
-		return m_accountHolderName;
-	}
-	
 };
