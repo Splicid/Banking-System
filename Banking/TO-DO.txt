@@ -4,4 +4,7 @@ Current Tasks:
 - Redo database - DONE
 - Modify SQL account database for password - DONE
 - Fix the structure of password hashing - DONE
-- Create a query that insert account details to Customer table and Account Table. - TESTING
+- Create a query that insert account details to Customer table and Account Table. - DONE
+- Fix random number not being random - DONE
+
+- Add user login

@@ -4,6 +4,10 @@
 #include <sqlite3.h>
 #include <sodium.h>
 
+// Include the BankingDBActions.cpp file
+#include "BankingDBActions.cpp"
+
+
 class Bank
 {
 private:
@@ -22,9 +26,7 @@ public:
 	std::string m_fullAddress;
 	std::string m_emailAddress;
 	std::string m_phoneNumber;
-	sqlite3* db;
     int m_accountHolderZip;
-
 
 
 	Bank()
@@ -34,27 +36,67 @@ public:
 		m_accountIdNumber = 1;
 	}
 
-    void customerBalance()
-	{
-		std::cout << "Your currently have: " << m_customerBalance << std::endl;
-	}
-
-	int checkUserMembership()
+	int checkUserMembership(sqlite3* db)
 	{
 		std::string answer;
 		std::cout << "Do you have an account. yes/no: ";
 		std::cin >> answer;
 		if (answer == "yes")
 		{
-			return true;
+			userLogin(db);
+			return 0;
 		}
-		newUser();
+		newUser(db);
         return 0;
+	}
+
+	void userLogin(sqlite3* db)
+	{
+		std::string email;
+		std::string password;
+		std::cout << "Enter your email: ";
+		std::cin >> email;
+		std::cout << "Enter your password: ";
+		std::cin >> password;
+
+		// Check if the user exists
+		if (checkUser(db, email, password))
+		{
+			std::cout << "Login successful" << std::endl;
+			
+		}
+		else
+		{
+			std::cout << "Login failed" << std::endl;
+		}
+	}
+
+	bool checkUser(sqlite3* db, const std::string& email, const std::string& password)
+	{
+		sqlite3_stmt* stmt;
+		const char* sql = "SELECT * FROM ACCOUNTS WHERE ACCOUNT_EMAIL = ?;";
+		int rc = sqlite3_prepare_v2(db, sql, -1, &stmt, 0);
+
+		if (rc != SQLITE_OK) {
+			std::cerr << "SQL error: " << sqlite3_errmsg(db) << std::endl;
+			return false;
+		}
+
+		sqlite3_bind_text(stmt, 1, email.c_str(), -1, SQLITE_STATIC);
+
+		rc = sqlite3_step(stmt);
+		if (rc != SQLITE_ROW) {
+			std::cerr << "Execution failed: " << sqlite3_errmsg(db) << std::endl;
+			return false;
+		}
+
+		std::string hashedPassword = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 3)));
+		std::cout << "Hashed Password: " << hashedPassword << std::endl;
+		return checkPassword(password, hashedPassword);
 	}
 
     std::string dateCheck(std::string m_accountDate)
     {
-
         std::cout << "Enter Your date of birth (YYYY-MM-DD): ";
         std::getline(std::cin, m_accountDate);
         struct tm tm;   
@@ -62,8 +104,7 @@ public:
         if (strptime(s.c_str(), "%Y-%m-%d", &tm))
             //std::cout << "Validate date" << std::endl;
             return m_accountDate;
-        return dateCheck(m_accountDate);
-         
+        return dateCheck(m_accountDate);   
     }
 
 	std::string getPassword()
@@ -113,93 +154,20 @@ public:
 			password.size()) == 0;
 	}
 
-	void testCheckPassword()
-	{
-		std::string password = "password";
-		std::string hashedPassword = hashPassword(password);
-		std::cout << "Hashed Password: " << hashedPassword << std::endl;
-		std::cout << "Password is: " << checkPassword(password, hashedPassword) << std::endl;
-	}
+	// void testCheckPassword()
+	// {
+	// 	std::string password = "password";
+	// 	std::string hashedPassword = hashPassword(password);
+	// 	std::cout << "Hashed Password: " << hashedPassword << std::endl;
+	// 	std::cout << "Password is: " << checkPassword(password, hashedPassword) << std::endl;
+	// }
 
 
-    int callback(void* data, int argc, char** argv, char** azColName) {
-        for (int i = 0; i < argc; i++) {
-            printf("%s = %s\n", azColName[i], argv[i] ? argv[i] : "NULL");
-        }
-        printf("\n");
-        return 0;
-    }
 
-    void executeCustomerSQL(sqlite3* db, const std::string& firstName, const std::string& lastName,
-        const std::string& address, const std::string& phoneNumber) {
-        sqlite3_stmt* stmt;
-        const char* sql = "INSERT INTO CUSTOMERS (FIRST_NAME, LAST_NAME, ADDRESS, PHONE_NUMBER) VALUES (?, ?, ?, ?);";
-        int rc = sqlite3_prepare_v2(db, sql, -1, &stmt, 0);
-
-        if (rc != SQLITE_OK) {
-            std::cerr << "SQL error: " << sqlite3_errmsg(db) << std::endl;
-            return;
-        }
-
-        sqlite3_bind_text(stmt, 1, firstName.c_str(), -1, SQLITE_STATIC);
-        sqlite3_bind_text(stmt, 2, lastName.c_str(), -1, SQLITE_STATIC);
-        sqlite3_bind_text(stmt, 3, address.c_str(), -1, SQLITE_STATIC);
-        sqlite3_bind_text(stmt, 4, phoneNumber.c_str(), -1, SQLITE_STATIC);
-
-        rc = sqlite3_step(stmt);
-        if (rc != SQLITE_DONE) {
-            std::cerr << "Execution failed: " << sqlite3_errmsg(db) << std::endl;
-        } else {
-            std::cout << "Record inserted successfully" << std::endl;
-        }
-
-        sqlite3_finalize(stmt);
-    }
-
-    void executeAccountSQL(sqlite3* db, int CUSTOMER_ID, const std::string& ACCOUNT_EMAIL, const std::string& ACCOUNT_PASSWORD) {
-        sqlite3_stmt* stmt;
-        const char* sql = "INSERT INTO ACCOUNTS (CUSTOMER_ID, ACCOUNT_EMAIL, ACCOUNT_PASSWORD) VALUES (?, ?, ?);";
-        int rc = sqlite3_prepare_v2(db, sql, -1, &stmt, 0);
-
-        if (rc != SQLITE_OK) {
-            std::cerr << "SQL error: " << sqlite3_errmsg(db) << std::endl;
-            return;
-        }
-
-        sqlite3_bind_int(stmt, 1, CUSTOMER_ID);
-        sqlite3_bind_text(stmt, 2, ACCOUNT_EMAIL.c_str(), -1, SQLITE_STATIC);
-        sqlite3_bind_text(stmt, 3, ACCOUNT_PASSWORD.c_str(), -1, SQLITE_STATIC);
-
-        rc = sqlite3_step(stmt);
-        if (rc != SQLITE_DONE) {
-            std::cerr << "Execution failed: " << sqlite3_errmsg(db) << std::endl;
-        } else {
-            std::cout << "Record inserted successfully" << std::endl;
-        }
-
-        sqlite3_finalize(stmt);
-    }
-
-	int testingInsert() {
-        int randomNum = rand() % 1000 + 1;
-        std::string firstName = "John";
-        std::string lastName = "Doe";
-        std::string address = "1234 Elm St";
-        std::string phoneNumber = "123-456-7890";
-
-        std::string accountEmail = "test@gmail.com";
-        std::string accountPassword = "password";
-
-        std::cout << firstName << " " << lastName << " " << address << " " << phoneNumber << std::endl;
-        std::cout << randomNum << " " << accountEmail << " " << accountPassword << std::endl;
-        executeCustomerSQL(db, firstName, lastName, address, phoneNumber);
-        executeAccountSQL(db, randomNum, accountEmail, hashPassword(accountPassword));
-
-        return 0;
-    }
 
 	// This function will create a new user
-	void newUser() {
+	void newUser(sqlite3* db) {
+		srand(time(0));
         std::cout << "--------------- Welcome to the Bank ---------------" << std::endl;
 
         std::cout << "Enter your first name: ";
@@ -243,12 +211,10 @@ public:
 
         executeCustomerSQL(db, m_accountHolderFirst, m_accountHolderLast, m_fullAddress, m_phoneNumber);
         executeAccountSQL(db, rand() % 1000 + 1, m_emailAddress, m_HashedPassword);
-    }
 
-	int accountActionable()
-	{
-		return 0;
-	}
+		//close db
+		sqlite3_close(db);
+    }
 
     ~Bank()
     {
