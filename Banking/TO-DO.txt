@@ -6,5 +6,5 @@ Current Tasks:
 - Fix the structure of password hashing - DONE
 - Create a query that insert account details to Customer table and Account Table. - DONE
 - Fix random number not being random - DONE
-
-- Add user login
+- Add user account confirmation - DONE
+- Check balance feature - DONE

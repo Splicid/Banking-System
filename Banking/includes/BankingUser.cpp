@@ -62,13 +62,38 @@ public:
 		// Check if the user exists
 		if (checkUser(db, email, password))
 		{
-			std::cout << "Login successful" << std::endl;
-			
+			// std::cout << "Do you want to check your balance? yes/no ";
+			// std::string answer;
+			// std::cin >> answer;
+			getBalance(db, email);
 		}
 		else
 		{
 			std::cout << "Login failed" << std::endl;
 		}
+	}
+
+	void getBalance(sqlite3* db, const std::string& ACCOUNT_EMAIL)
+	{
+		sqlite3_stmt* stmt;
+		const char* sql = "SELECT BALANCE FROM ACCOUNTS WHERE ACCOUNT_EMAIL = ?;";
+		int rc = sqlite3_prepare_v2(db, sql, -1, &stmt, 0);
+
+		if (rc != SQLITE_OK) {
+			std::cerr << "SQL error: " << sqlite3_errmsg(db) << std::endl;
+			return;
+		}
+
+		sqlite3_bind_text(stmt, 1, ACCOUNT_EMAIL.c_str(), -1, SQLITE_STATIC);
+
+		rc = sqlite3_step(stmt);
+		if (rc != SQLITE_ROW) {
+			std::cerr << "Execution failed: " << sqlite3_errmsg(db) << std::endl;
+			return;
+		}
+
+		m_customerBalance = sqlite3_column_double(stmt, 0);
+		std::cout << "Your balance is: " << m_customerBalance << std::endl;
 	}
 
 	bool checkUser(sqlite3* db, const std::string& email, const std::string& password)
@@ -91,7 +116,6 @@ public:
 		}
 
 		std::string hashedPassword = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 3)));
-		std::cout << "Hashed Password: " << hashedPassword << std::endl;
 		return checkPassword(password, hashedPassword);
 	}
 
@@ -210,7 +234,7 @@ public:
         std::string m_HashedPassword = hashPassword(password);
 
         executeCustomerSQL(db, m_accountHolderFirst, m_accountHolderLast, m_fullAddress, m_phoneNumber);
-        executeAccountSQL(db, rand() % 1000 + 1, m_emailAddress, m_HashedPassword);
+        executeAccountSQL(db, rand() % 1000 + 1, m_emailAddress, m_HashedPassword, m_customerBalance);
 
 		//close db
 		sqlite3_close(db);
